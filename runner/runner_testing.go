@@ -24,7 +24,6 @@ type RunWithTestingParams struct {
 	TestsDir    string
 	FixturesDir string
 	DB          *sql.DB
-	DbType      fixtures.DbType
 	EnvFilePath string
 	OutputFunc  output.OutputInterface
 }
@@ -46,7 +45,6 @@ func RunWithTesting(t *testing.T, params *RunWithTestingParams) {
 			Location: params.FixturesDir,
 			DB:       params.DB,
 			Debug:    debug,
-			DbType:   params.DbType,
 		})
 	}
 
