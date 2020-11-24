@@ -12,7 +12,6 @@ import (
 	"github.com/lamoda/gonkey/checker/response_db"
 	"github.com/lamoda/gonkey/checker/response_header"
 	"github.com/lamoda/gonkey/fixtures"
-	"github.com/lamoda/gonkey/mocks"
 	"github.com/lamoda/gonkey/output"
 	"github.com/lamoda/gonkey/output/allure_report"
 	testingOutput "github.com/lamoda/gonkey/output/testing"
@@ -23,7 +22,6 @@ import (
 type RunWithTestingParams struct {
 	Server      *httptest.Server
 	TestsDir    string
-	Mocks       *mocks.Mocks
 	FixturesDir string
 	DB          *sql.DB
 	DbType      fixtures.DbType
@@ -34,11 +32,6 @@ type RunWithTestingParams struct {
 // RunWithTesting is a helper function the wraps the common Run and provides simple way
 // to configure Gonkey by filling the params structure.
 func RunWithTesting(t *testing.T, params *RunWithTestingParams) {
-	var mocksLoader *mocks.Loader
-	if params.Mocks != nil {
-		mocksLoader = mocks.NewLoader(params.Mocks)
-	}
-
 	if params.EnvFilePath != "" {
 		if err := godotenv.Load(params.EnvFilePath); err != nil {
 			t.Fatal(err)
@@ -63,8 +56,6 @@ func RunWithTesting(t *testing.T, params *RunWithTestingParams) {
 	r := New(
 		&Config{
 			Host:           params.Server.URL,
-			Mocks:          params.Mocks,
-			MocksLoader:    mocksLoader,
 			FixturesLoader: fixturesLoader,
 			Variables:      variables.New(),
 		},
