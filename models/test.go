@@ -12,7 +12,6 @@ type TestInterface interface {
 	GetResponseHeaders(code int) (map[string]string, bool)
 	GetName() string
 	Fixtures() []string
-	ServiceMocks() map[string]interface{}
 	Pause() int
 	BeforeScriptPath() string
 	BeforeScriptTimeout() int

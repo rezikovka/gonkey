@@ -19,7 +19,6 @@ type TestDefinition struct {
 	Cases              []CaseData                `json:"cases" yaml:"cases"`
 	ComparisonParams   comparisonParams          `json:"comparisonParams" yaml:"comparisonParams"`
 	FixtureFiles       []string                  `json:"fixtures" yaml:"fixtures"`
-	MocksDefinition    map[string]interface{}    `json:"mocks" yaml:"mocks"`
 	PauseValue         int                       `json:"pause" yaml:"pause"`
 	DbQueryTmpl        string                    `json:"dbQuery" yaml:"dbQuery"`
 	DbResponseTmpl     []string                  `json:"dbResponse" yaml:"dbResponse"`

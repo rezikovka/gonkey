@@ -71,10 +71,6 @@ func (t *Test) Fixtures() []string {
 	return t.FixtureFiles
 }
 
-func (t *Test) ServiceMocks() map[string]interface{} {
-	return t.MocksDefinition
-}
-
 func (t *Test) Pause() int {
 	return t.PauseValue
 }
