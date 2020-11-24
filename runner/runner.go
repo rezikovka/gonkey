@@ -7,21 +7,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lamoda/gonkey/checker"
-	"github.com/lamoda/gonkey/cmd_runner"
-	"github.com/lamoda/gonkey/fixtures"
-	"github.com/lamoda/gonkey/mocks"
-	"github.com/lamoda/gonkey/models"
-	"github.com/lamoda/gonkey/output"
-	"github.com/lamoda/gonkey/testloader"
-	"github.com/lamoda/gonkey/variables"
+	"github.com/rezikovka/gonkey/checker"
+	"github.com/rezikovka/gonkey/fixtures"
+	"github.com/rezikovka/gonkey/models"
+	"github.com/rezikovka/gonkey/output"
+	"github.com/rezikovka/gonkey/testloader"
+	"github.com/rezikovka/gonkey/variables"
 )
 
 type Config struct {
 	Host           string
 	FixturesLoader fixtures.Loader
-	Mocks          *mocks.Mocks
-	MocksLoader    *mocks.Loader
 	Variables      *variables.Variables
 }
 
@@ -109,27 +105,6 @@ func (r *Runner) executeTest(v models.TestInterface, client *http.Client) (*mode
 		}
 	}
 
-	// reset mocks
-	if r.config.Mocks != nil {
-		// prevent deriving the definition from previous test
-		r.config.Mocks.ResetDefinitions()
-		r.config.Mocks.ResetRunningContext()
-	}
-
-	// load mocks
-	if r.config.MocksLoader != nil && v.ServiceMocks() != nil {
-		if err := r.config.MocksLoader.Load(v.ServiceMocks()); err != nil {
-			return nil, err
-		}
-	}
-
-	// launch script in cmd interface
-	if v.BeforeScriptPath() != "" {
-		if err := cmd_runner.CmdRun(v.BeforeScriptPath(), v.BeforeScriptTimeout()); err != nil {
-			return nil, err
-		}
-	}
-
 	// make pause
 	pause := v.Pause()
 	if pause > 0 {
@@ -167,11 +142,6 @@ func (r *Runner) executeTest(v models.TestInterface, client *http.Client) (*mode
 		ResponseStatus:      resp.Status,
 		ResponseHeaders:     resp.Header,
 		Test:                v,
-	}
-
-	if r.config.Mocks != nil {
-		errs := r.config.Mocks.EndRunningContext()
-		result.Errors = append(result.Errors, errs...)
 	}
 
 	for _, c := range r.checkers {

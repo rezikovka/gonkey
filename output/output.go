@@ -1,7 +1,7 @@
 package output
 
 import (
-	"github.com/lamoda/gonkey/models"
+	"github.com/rezikovka/gonkey/models"
 )
 
 type OutputInterface interface {

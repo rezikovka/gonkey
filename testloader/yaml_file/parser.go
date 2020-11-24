@@ -72,7 +72,6 @@ func makeTestFromDefinition(testDefinition TestDefinition) ([]Test, error) {
 		test.Request = testDefinition.RequestTmpl
 		test.Responses = testDefinition.ResponseTmpls
 		test.ResponseHeaders = testDefinition.ResponseHeaders
-		test.BeforeScript = testDefinition.BeforeScriptParams.PathTmpl
 		test.DbQuery = testDefinition.DbQueryTmpl
 		test.DbResponse = testDefinition.DbResponseTmpl
 		return append(tests, test), nil
@@ -81,7 +80,6 @@ func makeTestFromDefinition(testDefinition TestDefinition) ([]Test, error) {
 	var err error
 
 	requestTmpl := testDefinition.RequestTmpl
-	beforeScriptPathTmpl := testDefinition.BeforeScriptParams.PathTmpl
 	requestURLTmpl := testDefinition.RequestURL
 	queryParamsTmpl := testDefinition.QueryParams
 	headersValTmpl := testDefinition.HeadersVal
@@ -148,11 +146,6 @@ func makeTestFromDefinition(testDefinition TestDefinition) ([]Test, error) {
 				// not found args, using response as is
 				test.ResponseHeaders[status] = respHeaders
 			}
-		}
-
-		test.BeforeScript, err = substituteArgs(beforeScriptPathTmpl, testCase.BeforeScriptArgs)
-		if err != nil {
-			return nil, err
 		}
 
 		test.DbQuery, err = substituteArgs(testDefinition.DbQueryTmpl, testCase.DbQueryArgs)

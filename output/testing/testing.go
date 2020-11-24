@@ -5,8 +5,8 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/lamoda/gonkey/models"
-	"github.com/lamoda/gonkey/output"
+	"github.com/rezikovka/gonkey/models"
+	"github.com/rezikovka/gonkey/output"
 )
 
 type TestingOutput struct {
