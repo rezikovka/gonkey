@@ -1,4 +1,4 @@
-module github.com/lamoda/gonkey
+module github.com/rezikovka/gonkey
 
 go 1.14
 
@@ -9,7 +9,6 @@ require (
 	github.com/go-openapi/spec v0.19.7
 	github.com/go-openapi/strfmt v0.19.5
 	github.com/go-openapi/validate v0.19.7
-	github.com/google/uuid v1.1.1
 	github.com/joho/godotenv v1.3.0
 	github.com/kylelemons/godebug v1.1.0
 	github.com/lib/pq v1.3.0
@@ -17,6 +16,5 @@ require (
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/tidwall/gjson v1.6.0
-	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0
 	gopkg.in/yaml.v2 v2.2.8
 )

@@ -1,7 +1,7 @@
 package yaml_file
 
 import (
-	"github.com/lamoda/gonkey/models"
+	"github.com/rezikovka/gonkey/models"
 )
 
 type Test struct {
@@ -12,7 +12,6 @@ type Test struct {
 	Request         string
 	Responses       map[int]string
 	ResponseHeaders map[int]map[string]string
-	BeforeScript    string
 	DbQuery         string
 	DbResponse      []string
 }
@@ -71,20 +70,8 @@ func (t *Test) Fixtures() []string {
 	return t.FixtureFiles
 }
 
-func (t *Test) ServiceMocks() map[string]interface{} {
-	return t.MocksDefinition
-}
-
 func (t *Test) Pause() int {
 	return t.PauseValue
-}
-
-func (t *Test) BeforeScriptPath() string {
-	return t.BeforeScript
-}
-
-func (t *Test) BeforeScriptTimeout() int {
-	return t.BeforeScriptParams.Timeout
 }
 
 func (t *Test) Cookies() map[string]string {

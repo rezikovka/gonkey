@@ -6,8 +6,8 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/lamoda/gonkey/fixtures/mysql"
-	"github.com/lamoda/gonkey/fixtures/postgres"
+	"github.com/rezikovka/gonkey/fixtures/mysql"
+	"github.com/rezikovka/gonkey/fixtures/postgres"
 )
 
 type DbType int
