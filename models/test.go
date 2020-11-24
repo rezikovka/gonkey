@@ -13,8 +13,6 @@ type TestInterface interface {
 	GetName() string
 	Fixtures() []string
 	Pause() int
-	BeforeScriptPath() string
-	BeforeScriptTimeout() int
 	Cookies() map[string]string
 	Headers() map[string]string
 	ContentType() string

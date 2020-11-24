@@ -12,7 +12,6 @@ type Test struct {
 	Request         string
 	Responses       map[int]string
 	ResponseHeaders map[int]map[string]string
-	BeforeScript    string
 	DbQuery         string
 	DbResponse      []string
 }
@@ -73,14 +72,6 @@ func (t *Test) Fixtures() []string {
 
 func (t *Test) Pause() int {
 	return t.PauseValue
-}
-
-func (t *Test) BeforeScriptPath() string {
-	return t.BeforeScript
-}
-
-func (t *Test) BeforeScriptTimeout() int {
-	return t.BeforeScriptParams.Timeout
 }
 
 func (t *Test) Cookies() map[string]string {

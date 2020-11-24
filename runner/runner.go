@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/lamoda/gonkey/checker"
-	"github.com/lamoda/gonkey/cmd_runner"
 	"github.com/lamoda/gonkey/fixtures"
 	"github.com/lamoda/gonkey/models"
 	"github.com/lamoda/gonkey/output"
@@ -103,13 +102,6 @@ func (r *Runner) executeTest(v models.TestInterface, client *http.Client) (*mode
 	if r.config.FixturesLoader != nil && v.Fixtures() != nil {
 		if err := r.config.FixturesLoader.Load(v.Fixtures()); err != nil {
 			return nil, fmt.Errorf("unable to load fixtures [%s], error:\n%s", strings.Join(v.Fixtures(), ", "), err)
-		}
-	}
-
-	// launch script in cmd interface
-	if v.BeforeScriptPath() != "" {
-		if err := cmd_runner.CmdRun(v.BeforeScriptPath(), v.BeforeScriptTimeout()); err != nil {
-			return nil, err
 		}
 	}
 
