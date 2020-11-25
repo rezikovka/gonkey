@@ -2,7 +2,6 @@ package variables
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 )
 
@@ -25,15 +24,6 @@ func NewVariable(name, value string) *Variable {
 		defaultValue: value,
 		rx:           rx,
 	}
-}
-
-func NewFromEnvironment(name string) *Variable {
-	val := os.Getenv(name)
-	if val == "" {
-		return nil
-	}
-
-	return NewVariable(name, val)
 }
 
 // perform replaces variable in str to its value

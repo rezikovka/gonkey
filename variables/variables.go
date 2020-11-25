@@ -95,13 +95,7 @@ func (vs *Variables) perform(str string) string {
 }
 
 func (vs *Variables) get(name string) *Variable {
-
-	v := vs.variables[name]
-	if v == nil {
-		v = NewFromEnvironment(name)
-	}
-
-	return v
+	return vs.variables[name]
 }
 
 func (vs *Variables) performForm(form *models.Form) *models.Form {

@@ -1,41 +1,39 @@
-# Gonkey: testing automation tool
+# Gonkey: инструмент автоматизации тестирования
 
-[View Russian version of this file here](README-ru.md)
+Gonkey протестирует ваши сервисы, используя их API. Он умеет обстреливать сервис заранее заготовленными запросами и проверять ответы. Сценарий теста описывается в YAML-файле.
 
-Gonkey will test your services using their API. It can bomb the service with prepared requests and check the responses. Test scenarios are described in YAML-files.
+Возможности:
+- работает с REST/JSON API
+- проверка API сервиса на соответствие OpenAPI-спеке
+- заполнение БД сервиса данными из фикстур (поддерживается PostgreSQL)
+- моки для имитации внешних сервисов
+- можно подключить к проекту как библиотеку и запускать вместе с юнит-тестами
+- запись результата тестов в виде отчета [Allure](http://allure.qatools.ru/)
 
-Capabilities:
-- works with REST/JSON API
-- tests service API for compliance with OpenAPI-specs
-- seeds the DB with fixtures data (supports PostgreSQL)
-- provides mocks for external services
-- can be used as a library and ran together with unit-tests
-- stores the results as an [Allure](http://allure.qatools.ru/) report
+### Использование консольной утилиты
 
-### Using the CLI
-
-To test a service located on a remote host, use gonkey as a console util.
+Для тестирование сервиса, размещенного на удаленном хосте, используйте gonkey как консольную утилиту.
 
 `./gonkey -host <...> -tests <...> [-spec <...>] [-db_dsn <...> -fixtures <...>] [-allure] [-v]`
 
-- `-spec <...>` path to a file or URL with the swagger-specs for the service
-- `-host <...>` service host:port
-- `-tests <...>` test file or directory
-- `-db_dsn <...>` DSN for the test DB (the DB will be cleared before seeding!), supports only PostgreSQL
-- `-fixtures <...>` fixtures directory
-- `-allure` generate an Allure-report
-- `-v` verbose output
-- `-debug` debug output
+- `-spec <...>` путь к файлу или URL со swagger-спецификацией сервиса
+- `-host <...>` хост:порт сервиса
+- `-tests <...>` файл или директория с тестами
+- `-db_dsn <...>` dsn для вашей тестовой базы данных (бд будет очищена перед наполнением!), поддерживается только PostgreSQL
+- `-fixtures <...>` директория с вашими фикстурами
+- `-allure` генерировать allure-отчет
+- `-v` подробный вывод
+- `-debug` отладочный вывод
 
-You can't use mocks in this mode.
+В таком режиме моки использовать не получится.
 
-### Using gonkey as a library
+### Использование gonkey как библиотеки
 
-To integrate functional and native Go tests and run them together, use gonkey as a library.
+Чтобы интегрировать функциональные тесты в нативные тесты Go и запускать их вместе, используйте gonkey как библиотеку.
 
-Create a test file, for example `func_test.go`.
+Создайте файл для будущего теста, например, `func_test.go`.
 
-Import gonkey as a dependency to your project in this file.
+Подключите gonkey как зависимость к вашему проекту в этом файле.
 
 ```go
 import (
@@ -44,21 +42,21 @@ import (
 )
 ```
 
-Create a test function.
+Создайте функцию с тестом.
 
 ```go
 func TestFuncCases(t *testing.T) {
-    // init the mocks if needed (details below)
+    // проинициализируйте моки, если нужно (подробнее - ниже)
     //m := mocks.NewNop(...)
 
-    // init the DB to load the fixtures if needed (details below)
+    // проинициализирйте базу для загрузки фикстур, если нужно (подробнее - ниже)
     //db := ...
 
-    // create a server instance of your app
+    // создайте экземпляр сервера вашего приложения
     srv := server.NewServer()
     defer srv.Close()
 
-    // run test cases from your dir with Allure report generation
+    // запустите выполнение тестов из директории cases с записью в отчет Allure
     runner.RunWithTesting(t, &runner.RunWithTestingParams{
         Server:      srv,
         TestsDir:    "cases",
@@ -69,11 +67,11 @@ func TestFuncCases(t *testing.T) {
 }
 ```
 
-The tests can be now ran with `go test`, for example: `go test ./...`.
+Теперь тесты можно запускать через `go test`, например, так: `go test ./...`.
 
-### Test file example
+### Пример файла с тестами
 ```yaml
-- name: WHEN the list of orders is requested MUST successfully response
+- name: КОГДА запрашивается список заказов ДОЛЖЕН успешно возвращаться
   method: GET
   path: /jsonrpc/v2/order.getBriefList
   query: ?id=550e8400-e29b-41d4-a716-446655440000&jsonrpc=2.0&user_id=00001
@@ -101,7 +99,7 @@ The tests can be now ran with `go test`, for example: `go test ./...`.
         }
       }
 
-- name: WHEN one order is requested MUST response with user and sum
+- name: КОГДА запрашивается один заказ ДОЛЖЕН возвращаться пользователь и сумма
   method: POST
   path: /jsonrpc/v2/order.getOrder
 
@@ -137,12 +135,11 @@ The tests can be now ran with `go test`, for example: `go test ./...`.
         "jsonrpc": "2.0",
         "result": {
           "user_id": {{ .userId }},
-          "amount": {{ .amount }},
-          "token": "$matchRegexp(^\w{16}$)"
+          "amount": {{ .amount }}
         }
       }
 
-  responseHeaders:
+responseHeaders:
     200:
       Content-Type: "application/json"
       Cache-Control: "no-store, must-revalidate"
@@ -164,13 +161,13 @@ The tests can be now ran with `go test`, for example: `go test ./...`.
           amount: 72000
 ```
 
-As you can see in this example, you can use Regexp for checking response body.
-It can be used for all body (if it's plaint text):
+Как видно из примера, вы можете использовать Regexp для проверки тела ответа.
+Они могут быть использованы для проверки всего тела (если это просто текст):
 ```
     response:
         200: "$matchRegexp(^xy+z$)"
 ```
-or for elements of map/array (if it's JSON):
+или для элементов map/array (если это JSON):
 ```
     response:
         200: |
@@ -186,25 +183,25 @@ or for elements of map/array (if it's JSON):
           }
 ```
 
-### HTTP-request
+### HTTP-запрос
 
-`method` - a parameter for HTTP request type, the format is in the example above.
+`method` - параметр для передачи типа HTTP запроса, формат передачи указан в примере выше
 
-`path` - a parameter for URL path, the format is in the example above.
+`path` - параметр для передачи URL-пути, формат передачи указан в примере выше
 
-`headers` - a parameter for HTTP headers, the format is in the example above.
+`headers` - параметр для передачи http-заголовков, формат передачи указан в примере выше.
 
-`cookies` - a parameter for cookies, the format is in the example above.
+`cookies` -  параметр для передачи cookie, формат передачи указан в примере выше.
 
-### HTTP-response
+### HTTP-ответ
 
-`response` - the HTTP response body for the specified HTTP status codes.
+`response` - тело ответа HTTP для указанных кодов состояния HTTP.
 
-`responseHeaders` - all HTTP response headers for the specified HTTP status codes.
+`responseHeaders` - все заголовки ответа HTTP для указанных кодов состояния HTTP.
 
-### Variables
+### Переменные
 
-You can use variables in the description of the test, the following fields are supported:
+В описании теста можно использовать переменные, они поддерживаются в следующих полях:
 
 - method
 - path
@@ -213,7 +210,7 @@ You can use variables in the description of the test, the following fields are s
 - request
 - response
 
-Example:
+Пример использования:
 
 ```yaml
 - method: "{{ $method }}"
@@ -226,17 +223,19 @@ Example:
     200: "{{ $resp }}"
 ```
 
-You can assign values to variables in the following ways (priorities are from top to bottom):
+Присваивать значения переменным можно следующими способами:
 
-- in the description of the test
-- from the response of the previous test 
-- from environment variables or from env-file
+- в описании самого теста
+- из результатов предыдущего запроса
+- в переменных окружения или в env-файле
 
-#### More detailed about assignment methods
+Приоритеты источников соответствуют порядку перечисления.
 
-##### In the description of the test
+#### Подробнее про способы присваивания:
 
-Example: 
+##### В описании самого теста
+
+Пример: 
 
 ```yaml
 - method: "{{ $method }}"
@@ -256,18 +255,18 @@ Example:
     200: "{{ $resp }}"
 ```
 
-##### From the response of the previous test 
+##### Из результатов предыдущего запроса
 
-Example:
+Пример:
 
 ```yaml
-# if the response is plain text
+# если в ответе plain text
 - name: "get_last_post_id"
   ...
   variables_to_set:
           200: "id"
 
-# if the response is JSON
+# если в ответе JSON
 - name: "get_last_post_info"
   variables_to_set:
           200:
@@ -276,33 +275,35 @@ Example:
             authorId: "author_info.id"
 ```
 
-You can access nested fields like this:
+Обратите внимание - если нужно использовать значение вложенного поля, можно указать путь до него:
 > "author_info.id"
 
-Any nesting levels are supported.
+Глубина вложенности может быть любая.
 
-##### From environment variables or from env-file
+##### В переменных окружения или в env-файле
 
-Gonkey automatically checks if variable exists in the environment variables (case-sensitive) and loads a value from there, if it exists.
+Gonkey автоматически проверяет наличие указанной переменной среди переменных окружения (в таком же регистре) и берет значение оттуда, в случае наличия.
 
-If an env-file is specified, variables described in it will be added or will replace the corresponding environment variables.
+Если указан env-файл, то описанные в нем переменные добавятся/заменят соответствующие перемнные окружения.
+env-файл указывается с помощью параметра env-file
 
-Example of an env file (standard syntax):
+Пример env-файла (стандартный синтаксис):
 ```.env
 jwt=some_jwt_value
 secret=my_secret
 password=private_password
 ```
 
-env-file can be convenient to hide sensitive information from a test (passwords, keys, etc.)
+env-файл, например, удобно использовать, когда нужно вынести из теста приватную информацию (пароли, ключи и т.п.)
 
-### Files uploading
 
-You can upload files in test request. For this you must specify the type of request - POST and header:
+### Загрузка файлов
+
+В тестовом запросе можно загружать файлы. Для этого нужно указать тип запроса - POST и заголовок:
 
 > Content-Type: multipart/form-data
 
-Example:
+Пример:
 
 ```yaml
  - name: "upload-files"
@@ -320,11 +321,11 @@ Example:
        }
 ```
 
-### Fixtures
+### Фикстуры
 
-To seed the DB before the test, gonkey uses fixture files.
+Чтобы наполнить базу перед тестом, используются файлы с фикстурами.
 
-File example:
+Пример файла:
 
 ```yaml
 # fixtures/comments.yml
@@ -368,15 +369,15 @@ tables:
   ...
 ```
 
-Records in fixtures can use templates, inherit and reference each other.
+Записи в фикстурах можно наследовать одну от другой, использовать шаблоны, а так же ссылаться из одной записи на другую.
 
-#### Record templates
+#### Шаблоны записей
 
-Usually, to insert a record to a DB, it's necessary to list all the fields without default values. Oftentimes, many of those fields are not important for the test, and their values repeat from one fixture to another, creating unnecessary visual garbage and making the maintenance harder.
+Обычно, чтобы вставить строку данных в базу, вам нужно перечислить все поля, для которых в базе не предусмотрено значение по умолчанию. Довольно часто, многие из этих полей не важны для теста и их значения повторяются от одной фикстуры к другой, создавая ненужный визуальный мусор и усложняя их поддержку.
 
-With templates you can inherit the fields from template record redefining only the fields that are important for the test.
+С помощью шаблонов вы можете наследовать поля из шаблонной записи, каждый раз переопределяя только те поля, которые действительно важны для теста.
 
-Template definition example:
+Пример определения шаблона:
 ```yaml
 templates:
   dummy_client:
@@ -393,7 +394,7 @@ tables:
   ...
 ```
 
-Example of using a template in a fixture:
+Пример использования шаблона в фикстуре:
 ```yaml
 templates:
    ...
@@ -406,13 +407,13 @@ tables:
         name: Jane
 ```
 
-As you might have noticed, templates can be inherited as well with `$extend` keyword, but only if by the time of the dependent template definition the parent template is already defined (in this file or any other referenced with `inherits`).
+Как вы могли заметить, шаблоны тоже можно наследовать друг от друга с помощью ключевого слова `$extend`, но только если к моменту определения зависимого шаблона базовый шаблон уже определен (в этом же файле или любом, подключенном через `inherits`).
 
-#### Record inheritance
+#### Наследование записей
 
-Records can be inherited as well using `$extend`.
+Записи, как и шаблоны, можно наследовать с помощью `$extend`.
 
-To inherit a record, first you need to assign this record a name using `$name`:
+Для того, чтобы унаследовать запись, сначала нужно присвоить строке имя с помощью `$name`:
 
 ```yaml
 # fixtures/post.yaml
@@ -423,9 +424,9 @@ tables:
       text: Some text
 ```
 
-Names assigned to records must be unique among all loaded fixture files, as well as they must not interfere with template names.
+Имена, присваеваемые строкам, должны быть уникальны среди всех загружаемых файлов с фикстурами, а также не пересекаться с именами шаблонов.
 
-In another fixture file you need to declare that a certain record inherits an earlier defined record with `$extend`, just like with the templates:
+В другом файле фикстур нужно объявить, что определенная строка наследует ранее объявленную запись с помощью `$extend`, так же, как и в случае с шаблоном:
 
 ```yaml
 # fixtures/deleted_post.yaml
@@ -437,17 +438,17 @@ tables:
       is_deleted: true
 ```
 
-Don't forget to declare the dependency between files in `inherits`, to make sure that one file is always loaded together with the other one.
+Не забудьте объявить зависимость между файлами в `inherits`, чтобы один файл всегда загружался вместе с другим.
 
-It's important to note that record inheritance only works with different fixture files. It's not possible to declare inheritance within one file.
+Обратите внимание, что наследование строк работает только между разными файлами фикстур. В пределах одного файла объявить наследование невозможно.
 
-#### Record linking
+#### Связывание записей
 
-Despite the fact that fixture files allow you to set values for autoincrement columns (usually `id`), it's not recommended doing it. It's very difficult to control that all the values for `id` are correct between different files and that they never interfere. In order to let the DB assign autoincrement values its enough to not set the value explicitly.
+Несмотря на то, что файлы фикстур позволяют вам задавать значение для автоинкрементных колонок (обычно `id`), не рекомендуется этого делать. Контролировать, чтобы в разных файлах использовались правильные значения для `id`, и чтобы они нигде не пересеклись, очень сложно. Чтобы база сама присвоила значение автоинкрементному полю, достаточно просто не указывать его значение явно.
 
-However, if the value for `id` is not set explicitly, how is it possible to link several entities that should reference each other with ids? Fixtures let us to reference previously inserted records by their name, using `$refName.fieldName`.
+Однако, если не указывать значение для `id`, то как связать несколько сущностей, которые должны ссылаться друг на друга по идентификаторам? Фикстуры позволяют ссылаться на значение ранее вставленных в базу строк по их имени, используя нотацию `$refName.fieldName`.
 
-Let's declare a named record:
+Объявим именованную запись:
 
 ```yaml
 # fixtures/post.yaml
@@ -458,7 +459,7 @@ tables:
       text: Some text
 ```
 
-Now, in order to link `posts` and `comments` tables, we can address the record using its name (`$regular_post`) and pass the field where the value should be taken from (`id`):
+Теперь, чтобы связать таблицы `posts` и `comments`, обратимся к записи по имени (`$regular_post`) и укажем поле, из которого следует взять значение (`id`):
 
 ```yaml
 # fixtures/comment.yaml
@@ -469,15 +470,15 @@ tables:
       author_name: John Doe
 ```
 
-You can only reference fields of a previously inserted record. It's impossible to reference template fields, when trying to do that you'll get an `undefined reference` error.
+Ссылаться можно только на поля ранее вставленной в базу записи, на поля шаблона ссылаться нельзя, при попытке это сделать, вы получите ошибку `undefined reference`.
 
-Take a note of a limitation: you can't reference records within one table of one file.
+Обратите внимание на ограничение: нельзя ссылаться на записи в пределах одной таблицы одного файла.
 
-#### Expressions
+#### Выражения
 
-When you need to write an expression execution result to the DB and not a static value, you can use `$eval()` construct. Everything inside the brackets will be inserted into the DB as raw, non-escaped data. This way, within `$eval()` you can write everything you would in a regular query.
+Если в базу нужно записать не статичное значение, а результат исполнения выражения, то можно воспользоваться конструкцией `$eval()`. Все, что будет задано внутри скобок, будет вставлено в базу в сыром, неэкранированном виде. Таким образом, внутри `$eval()` можно написать все то, что вы могли бы написать в самом запросе.
 
-For instance, this construct allows the insertion of current date and time as a field value:
+Например, такая конструкция вставит текущую дату и время в качестве значения поля:
 
 ```yaml
 tables:
@@ -485,18 +486,18 @@ tables:
     - created_at: $eval(NOW())
 ```
 
-### Mocks
+### Моки
 
-In order to imitate responses from external services, use mocks.
+Чтобы для тестов имитировать ответы от внешних сервисов, применяются моки.
 
-A mock is a web server that is running on-the-fly, and is populated with certain logic before the execution of each test. The logic defines what the server responses to a certain request. It's defined in the test file.
+Один мок - это поднятый "на лету" веб-сервер, который перед запуском каждого теста наполняется определенной логикой. Логика определяет, что ответит сервер на тот или иной запрос. Логика ответов описывается в файле теста.
 
-#### Running mocks while using gonkey as a library
+#### Запуск моков при использовании gonkey как библиотеки
 
-Before running tests, all planned mocks are started. It means that gonkey spins up the given number of servers and each one of them gets a random port assigned.
+Перед запуском тестов происходит старт всех планируемых к использованию моков - то есть поднимается заданное количество серверов, для каждого из них выделяется случайный порт.
 
 ```go
-// create empty server mocks
+// создаем пустые моки сервисов
 m := mocks.NewNop(
 	"cart",
 	"loyalty",
@@ -506,7 +507,7 @@ m := mocks.NewNop(
 	"discounts",
 )
 
-// spin up mocks
+// запускаем моки
 err := m.Start()
 if err != nil {
     t.Fatal(err)
@@ -514,10 +515,10 @@ if err != nil {
 defer m.Shutdown()
 ```
 
-After spinning up the mock web-servers, we can get their addresses (host and port). Using those addresses, you can configure your service to send their requests to mocked servers instead of real ones.
+После того, как веб-серверы моков подняты, можно получить от них адреса (хост и порт), на которых они разместились. Используя эти адреса, вы конфигурируете свой сервис, чтобы вместо обращений к реальным системам он обращался к поднятым мок-серверам.
 
 ```go
-// configuring and running the service
+// конфигурируем и запускаем наш сервис
 srv := server.NewServer(&server.Config{
 	CartAddr:      m.Service("cart").ServerAddr(),
 	LoyaltyAddr:   m.Service("loyalty").ServerAddr(),
@@ -529,21 +530,21 @@ srv := server.NewServer(&server.Config{
 defer srv.Close()
 ```
 
-As soon as you spinned up your mocks and configured your service, you can run the tests.
+Как только вы подняли моки и сконфигурировали свой сервис, можно запускать тесты.
 
 ```go
 runner.RunWithTesting(t, &runner.RunWithTestingParams{
     Server:    srv,
     Directory: "tests/cases",
-    Mocks:     m, // passing the mocks to the test runner
+    Mocks:     m, // передаем моки в раннер тестов
 })
 ```
 
-#### Mocks definition in the test file
+#### Описание моков в файле с тестом
 
-Each test communicates a configuration to the mock-server before running. This configuration defines the responses for specific requests in the mock-server. The configuration is defined in a YAML-file with test in the `mocks` section.
+Каждый тест перед запуском сообщает мок-серверу конфигурацию, которая определяет, что мок-сервер ответит на тот или иной запрос. Эта конфигурация задается в YAML-файле с тестом в секции `mocks`.
 
-The test file can contain any number of mock service definitions:
+Одновременно в файле с тестом можно описать любое количество мок-сервисов:
 
 ```yaml
 - name: Test with mocks
@@ -559,15 +560,15 @@ The test file can contain any number of mock service definitions:
     ...
 ```
 
-Each mock-service definition consists of:
+Описание каждого мок-сервиса состоит из:
 
-`requestConstraints` - an array of constraints that are applied on a received request. If at least one constraint is not satisfied, the test is considered failed. The list of all possible checks is provided below.
+`requestConstraints` - массив проверок, которые применяются к полученному запросу. Если хотя бы одна проверка не пройдена, тест считается проваленным. Список возможных проверок - ниже.
 
-`strategy` - the strategy of mock responses. The list of all possible strategies is provided below.
+`strategy` - стратегия ответа мока на запросы. Список возможных стратегий - ниже.
 
-The rest of the keys on the first nesting level are parameters to the strategy. Their variety is different for each strategy.
+Остальные ключи на первом уровне вложенности в описании мока - это параметры к стратегии. Их набор различен для каждой конкретной стратегии.
 
-A configuration example for one mock-service:
+Пример конфигурации одного мок-сервиса:
 ```yaml
   ...
   mocks:
@@ -581,21 +582,21 @@ A configuration example for one mock-service:
     ...
 ```
 
-##### Request constraints (requestConstraints)
+##### Проверки запросов (requestConstraints)
 
-The request to the mock-service can be validated using one or more constraints defined below.
+Запросы к мок-сервису можно валидировать с помощью одной или нескольких описанных ниже проверок.
 
-The definition of each constraint contains of the `kind` parameter that indicates which constraint will be applied.
+Описание каждой проверки состоит из параметра `kind`, в котором указывается, что за проверка будет применена.
 
-All other keys on this level are constraint parameters. Each constraint has its own parameter set.
+Все остальные ключи на этом уровне - это параметры проверки. У каждой проверки свой набор параметров. 
 
 ###### nop
 
-Empty constraint. Always successful.
+Пустая проверка. Всегда проходит успешно.
 
-No parameters.
+Нет параметров.
 
-Example:
+Пример:
 ```yaml
   ...
   mocks:
@@ -607,20 +608,20 @@ Example:
 
 ###### bodyMatchesJSON
 
-Checks that the request body is JSON, and it corresponds to the JSON defined in the `body` parameter.
+Проверяет, что тело запроса - это JSON, который соответствует заданному в параметре `body`.
 
-Parameters:
-- `body` (mandatory) - expected JSON. All keys on all levels defined in this parameter must be present in the request body.
+Параметры:
+- `body` (обязательный) - JSON, с которым будет сверяться запрос. Все ключи на всех уровнях, определенные в этом параметре, должны присутвовать в теле запроса.
 
-Example:
+Пример:
 ```yaml
   ...
   mocks:
     service1:
       requestConstraints:
-        # this check will demand that the request contains keys key1, key2 and subKey1
-        # and their values set to value1 and value2. However, it's fine if the request has 
-        # other keys not mentioned here.
+        # эта проверка будет требовать, чтобы запрос содержал ключи key1, key2 и subKey1,
+        # а значения были равны value1 и value2. Однако в запросе допускаются другие ключи,
+        # не перечисленные здесь - это нормально.
         - kind: bodyMatchesJSON
           body: >
             {
@@ -634,20 +635,19 @@ Example:
 
 ###### queryMatches
 
-Checks that the GET request parameters correspond to the ones defined in the `query` parameter.
+Проверяет, что параметры GET запроса соответствуют заданным в параметре `query`.
 
-Parameters:
-- `expectedQuery` (mandatory) - a list of parameters to compare the parameter string to. The order of parameters is not important.
+Параметры:
+- `expectedQuery` (обязательный) - строка параметров с которой будет сверяться запрос. Порядок параметров не имеет значения.
 
-Example:
+Пример:
 ```yaml
   ...
   mocks:
     service1:
       requestConstraints:
-        # this check will demand that the request contains key1 и key2
-        # and the values are key1=value1, key1=value11 и key2=value2. 
-        # Keys not mentioned here are omitted while running the check.
+        # эта проверка будет требовать, чтобы запрос содержал ключи key1 и key2,
+        # а значения были равны key1=value1, key1=value11 и key2=value2. Ключи не указанные в запросе будут пропущены при проверке.
         - kind: queryMatches
           expectedQuery:  key1=value1&key2=value2&key1=value11
     ...
@@ -655,16 +655,16 @@ Example:
 
 ###### methodIs
 
-Checks that the request method corresponds to the expected one.
+Проверяет, что метод запроса соответствует заданному.
 
-Parameters:
-- `method` (mandatory) - string to compare the request method to.
+Параметры:
+- `method` (обязательный) - строка, с которой сравнивается метод запроса.
 
-There are also 2 short variations that don't require `method` parameter:
+Есть также два коротких варианта, не требущих указания параметра `method`:
 - `methodIsGET`
 - `methodIsPOST`
 
-Examples:
+Примеры:
 ```yaml
   ...
   mocks:
@@ -680,14 +680,14 @@ Examples:
 
 ###### headerIs
 
-Checks that the request has the defined header and (optional) that its value either equals the pre-defined one or falls under the definition of a regular expression.
+Проверяет, что в запросе есть указанный заголовок и, опционально, что его значение равно заданному или подпадает под условия регулярного выражения.
 
-Parameters:
-- `header` (mandatory) - name of the header that is expected with the request;
-- `value` - a string with the expected request header value;
-- `regexp` - a regular expression to check the header value against.
+Параметры:
+- `header` (обязательный) - название заголовка, который ожидается в запросе;
+- `value` - строка, которой должно быть равно значение заголовка;
+- `regexp` - регулярное выражение, которому должно соответствовать значение заголовка.
 
-Examples:
+Примеры:
 ```yaml
   ...
   mocks:
@@ -704,17 +704,17 @@ Examples:
     ...
 ```
 
-##### Response strategies (strategy)
+##### Стратегии ответов (strategy)
 
-Response strategies define what mock will response to incoming requests.
+Стратегии ответов определяют, как мок будет отвечать на входящие запросы.
 
 ###### nop
 
-Empty strategy. All requests are served with `204 No Content` and empty body.
+Пустая стратегия. На любой запрос возвращается ответ `204 No Content` с пустым телом.
 
-No parameters.
+Не имеет параметров.
 
-Example:
+Пример:
 
 ```yaml
   ...
@@ -726,14 +726,14 @@ Example:
 
 ###### file
 
-Returns a response read from a file.
+Возвращает ответ, прочитанный из файла.
 
-Parameters:
-- `filename` (mandatory) - name of the file that contains the response body;
-- `statusCode` - HTTP-code of the response, the default value is `200`;
-- `headers` - response headers.
+Параметры:
+- `filename` (обязательный) - имя файла, из которого будет прочитано тело ответа;
+- `statusCode` - HTTP-код ответа, по умолчанию `200`;
+- `headers` - заголовки ответа.
 
-Example:
+Пример:
 ```yaml
   ...
   mocks:
@@ -748,14 +748,14 @@ Example:
 
 ###### constant
 
-Returns a defined response.
+Возвращает заданный ответ.
 
-Parameters:
-- `body` (mandatory) - sets the response body;
-- `statusCode` - HTTP-code of the response, the default value is `200`;
-- `headers` - response headers.
+Параметры:
+- `body` (обязательный) - задает тело ответа;
+- `statusCode` - HTTP-код ответа, по умолчанию `200`;
+- `headers` - заголовки ответа.
 
-Example:
+Пример:
 ```yaml
   ...
   mocks:
@@ -773,15 +773,15 @@ Example:
 
 ###### uriVary
 
-Uses different response strategies, depending on a path of a requested resource.
+Использует разные стратегии ответа, в зависимости от пути запрашиваемого ресурса.
 
-When receiving a request for a resource that is not defined in the parameters, responses with `404 Not Found`.
+При получении запроса на ресурс, который не задан в параметрах, отвечает `404 Not Found`.
 
-Parameters:
-- `uris` (mandatory) - a list of resources, each resource can be configured as a separate mock-service using any available request constraints and response strategies (see example)
-- `basePath` - common base route for all resources, empty by default
+Параметры:
+- `uris` (обязательный) - список ресурсов, каждый ресурс можно сконфигурировать как отдельный мок-сервис, используя любые доступные проверки запросов и стратегии ответов (см. пример)
+- `basePath` - общий базовый путь для всех ресурсов, по умолчанию пустой
 
-Example:
+Пример:
 ```yaml
   ...
   mocks:
@@ -805,14 +805,14 @@ Example:
 
 ###### methodVary
 
-Uses various response strategies, depending on the request method.
+Использует разные стратегии ответа, в зависимости от метода запроса.
 
-When receiving a request with a method not defined in methodVary, the server responses with `405 Method Not Allowed`.
+При получении запроса методом, который не упомянут в methodVary, сервер отвечает `405 Method Not Allowed`.
 
-Parameters:
-- `methods` (mandatory) - a list of methods, each method can be configured as a separate mock-service using any available request constraints and response strategies (see example)
+Параметры:
+- `methods` (обязательный) - список методов, каждый из которых можно сконфигурировать как отдельный мок-сервис, используя любые доступные проверки запросов и стратегии ответов (см. пример)
 
-Example:
+Пример:
 ```yaml
   ...
   mocks:
@@ -820,9 +820,8 @@ Example:
       strategy: methodVary
       methods:
         GET:
-          # nothing stops us from using `uriVary` strategy here
-          # this way we can form different responses to different 
-          # method+resource combinations
+          # ничего не мешает в этом месте использовать стратегию `uriVary`
+          # тем самым можно формировать разные ответы на комбинацию метод+ресурс
           strategy: constant
           body: >
             {
@@ -837,23 +836,23 @@ Example:
 
 ###### sequence
 
-With this strategy for each consequent request you will get a reply defined by a consequent nested strategy.
+На каждый последующий запрос эта стратегия будет отвечать так, как определено в очередной дочерней стратегии.
 
-If no nested strategy specified for a request, i.e. arrived more requests than nested strategies specified, response would be `404 Not Found`. 
+Если для запроса не задано дочерней стратегии, то есть пришло больше запросов, чем задано стратегий, то ответ будет `404 Not Found`. 
 
-Parameters:
-- `sequence` (mandatory) - list of nested strategies.
+Параметры:
+- `sequence` (обязательный) - список дочерних стратегий.
 
-Example:
+Пример:
 ```yaml
   ...
   mocks:
     service1:
       strategy: sequence
       sequence:
-        # Responds with a different text on each consequent request:
-        # "1" for first call, "2" for second call and so on.
-        # For 5th and later calls response will be 404 Not Found.
+        # Отвечает разным текстом на каждый последующий запрос:
+        # на первый запрос - "1", на второй - "2" и так далее.
+        # Ответ на пятый и последующие запросы будет 404 Not Found.
         - strategy: constant
           body: '1'
         - strategy: constant
@@ -865,16 +864,16 @@ Example:
     ...
 ```
 
-##### Calls count
+##### Подсчет количества вызовов
 
-You can define, how many times each mock or mock resource must be called (using `uriVary`). If the actual number of calls is different from expected, the test will be considered failed.
+Вы можете указать, сколько раз должен быть вызван мок или отдельный ресурс мока (используя `uriVary`). Если фактическое количество вызовов будет отличаться от ожидаемого, тест будет считаться проваленным.
 
-Example:
+Пример:
 ```yaml
   ...
   mocks:
     service1:
-      # must be called exactly one time
+      # должен вызываться ровно один раз
       calls: 1
       strategy: file
       filename: responses/books_list.json
@@ -888,31 +887,31 @@ Example:
       strategy: uriVary
       uris:
         /shelf/books:
-          # must be called exactly one time
+          # должен вызываться ровно один раз
           calls: 1
           strategy: file
           filename: responses/books_list.json
   ...
 ```
 
-### CMD interface
+### CMD интерфейс
 
-Before running an HTTP request you can run a script using cmd interface.
-When the test is ran, the first step is to load fixtures and run mocks. Next, the script is executed, then the test is ran.
+Перед выполнением http запросов можно выполнить скрипт посредством cmd интерфейса.
+При запуске теста сначала будут загружены фикстуры и запущены моки. Далее произойдет выполнение скрипта, а затем выполнится тест.
 
-#### Script definition
+#### Описание скрипта
 
-To define the script you need to provide 2 parameters:
+Для описание скрипта нужно указать два параметра:
 
-- `path` (mandatory) - string with a path to the script file.
-- `timeout` - time in seconds, is responsible for stopping the script on timeout. The default value is `3`.
+- `path` (обязательный) - строка, указывает путь к файлу скрипта.
+- `timeout` - время в секундах, отвечает за завершение скрипта по таймауту. По-умолчанию таймаут будет равен `3`.
 
-Example:
+Пример:
 ```yaml
   ...
   beforeScript:
     path: './cli_scripts/cmd_recalculate.sh'
-    # the timeout will equal 10s
+    # таймаут будет равен 10с
     timeout: 10
   ...
 ```
@@ -921,15 +920,15 @@ Example:
   ...
   beforeScript:
     path: './cli_scripts/cmd_recalculate.sh'
-    # the timeout will equal 3s
+    # таймаут будет равен 3с
   ...
 ```
 
-#### Running a script with parameterization
+#### Запуск скрипта с параметризацией
 
-When tests use parameterized requests, it's possible to use different scripts for each test run.
+В случае когда тесты используют параметризированные запросы также можно использовать различные скрипты для каждого запуска теста.
 
-Example:
+Пример:
 ```yaml
   ...
   beforeScript:
@@ -948,18 +947,18 @@ Example:
           file_name: "cmd_recalculate_customer_1.sh"
 ```
 
-### A DB query
+### Запрос в Базу данных
 
-After HTTP request execution you can run an SQL query to DB to check the data changes.
-The response can contain several records. Those records are compared to the expected list of records.
+После выполнения http запросов можно выполнить SQL запрос в БД для проверки изменений данных. 
+Допускается что ответ может содержать несколько записей. Далее эти данные сравниваются с ожидаемым списком записей.
 
-#### Query definition
+#### Описание запроса
 
-Query is a SELECT that returns any number of strings.
+Под запросом подразумевается SELECT, который вернет любое количество строк.
 
-- `dbQuery` - a string that contains an SQL query.
+- `dbQuery` - строка, содержит SQL запрос
 
-Example:
+Пример:
 ```yaml
   ...
   dbQuery:
@@ -967,13 +966,13 @@ Example:
   ...
 ```
 
-#### Definition of DB request response
+#### Описание ответа на запрос в Базу данных
 
-The response is a list of JSON objects that the DB request should return.
+Под ответом подразумевается список json объектов которые должен вернуть запрос в БД.
 
-- `dbResponse` - a string that contains a list of JSON objects.
+- `dbResponse` - строка, содержит список json объектов
 
-Example:
+Пример:
 ```yaml
   ...
   dbResponse:
@@ -984,13 +983,13 @@ Example:
 ```yaml
   ...
   dbResponse:
-    # empty list
+    # пустой список
 ```
-#### DB request parameterization
+#### Параметризация при запросах в Базу данных
 
-As well as with the HTTP request body, we can use parameterized requests.
+Как и в случае с телом http-запроса, мы можем использовать параметризированные запросы.
 
-Example:
+Пример:
 ```yaml
   ...
     dbQuery: >
@@ -1010,9 +1009,10 @@ Example:
         cert2: "GIFT100000-000003"
 ```
 
-When different tests contain different number of records, you can redefine the response for a specific test as a whole, while continuing to use a template with parameters in others.
+В случае, когда в разных тестах ответ содержит разное количество записей, вы можете переопределить ответ целиком для конкретного теста 
+продолжая использовать шаблон с параметрами в остальных
 
-Example:
+Пример:
 ```yaml
   ...
     dbQuery: >

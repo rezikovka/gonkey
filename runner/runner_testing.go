@@ -3,7 +3,6 @@ package runner
 import (
 	"database/sql"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -25,6 +24,8 @@ type RunWithTestingParams struct {
 	DB          *sql.DB
 	EnvFilePath string
 	OutputFunc  output.OutputInterface
+	debugMode   bool   // режим отладки
+	testFilter  string // подстрока для фильтрации тестов по имени файла. Будут запущены только тесты с вхождением подстроки
 }
 
 // RunWithTesting is a helper function the wraps the common Run and provides simple way
@@ -36,19 +37,17 @@ func RunWithTesting(t *testing.T, params *RunWithTestingParams) {
 		}
 	}
 
-	debug := os.Getenv("GONKEY_DEBUG") != ""
-
 	var fixturesLoader fixtures.Loader
 	if params.DB != nil {
 		fixturesLoader = fixtures.NewLoader(&fixtures.Config{
 			Location: params.FixturesDir,
 			DB:       params.DB,
-			Debug:    debug,
+			Debug:    params.debugMode,
 		})
 	}
 
 	yamlLoader := yaml_file.NewLoader(params.TestsDir)
-	yamlLoader.SetFileFilter(os.Getenv("GONKEY_FILE_FILTER"))
+	yamlLoader.SetFileFilter(params.testFilter)
 
 	r := New(
 		&Config{

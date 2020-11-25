@@ -1,17 +1,2 @@
 \vendor/
 \.idea/
-\.vscode/
-\pkg/
-gonkey
-_vendor*
-Gopkg.lock
-tmpfile*
-/allure-results
-.DS_Store
-
-# debug
-debug
-**/debug.test
-
-# local env-file
-.*.env

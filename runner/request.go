@@ -20,13 +20,6 @@ func newClient() (*http.Client, error) {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	if os.Getenv("HTTP_PROXY") != "" {
-		proxyUrl, err := url.Parse(os.Getenv("HTTP_PROXY"))
-		if err != nil {
-			return nil, err
-		}
-		transport.Proxy = http.ProxyURL(proxyUrl)
-	}
 
 	return &http.Client{
 		Transport: transport,
