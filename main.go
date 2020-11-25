@@ -14,7 +14,6 @@ import (
 	"github.com/lamoda/gonkey/checker/response_db"
 	"github.com/lamoda/gonkey/checker/response_schema"
 	"github.com/lamoda/gonkey/fixtures"
-	"github.com/lamoda/gonkey/output/allure_report"
 	"github.com/lamoda/gonkey/output/console_colored"
 	"github.com/lamoda/gonkey/runner"
 	"github.com/lamoda/gonkey/testloader/yaml_file"
@@ -29,7 +28,6 @@ func main() {
 		DbDsn            string
 		FixturesLocation string
 		EnvFile          string
-		Allure           bool
 		Verbose          bool
 		Debug            bool
 	}
@@ -40,7 +38,6 @@ func main() {
 	flag.StringVar(&config.DbDsn, "db_dsn", "", "DSN for the fixtures database (WARNING! Db tables will be truncated)")
 	flag.StringVar(&config.FixturesLocation, "fixtures", "", "Path to fixtures directory")
 	flag.StringVar(&config.EnvFile, "env-file", "", "Path to env-file")
-	flag.BoolVar(&config.Allure, "allure", true, "Make Allure report")
 	flag.BoolVar(&config.Verbose, "v", false, "Verbose output")
 	flag.BoolVar(&config.Debug, "debug", false, "Debug output")
 
@@ -97,12 +94,6 @@ func main() {
 	consoleOutput := console_colored.NewOutput(config.Verbose)
 	r.AddOutput(consoleOutput)
 
-	var allureOutput *allure_report.AllureReportOutput
-	if config.Allure {
-		allureOutput = allure_report.NewOutput("Gonkey", "./allure-results")
-		r.AddOutput(allureOutput)
-	}
-
 	r.AddCheckers(response_body.NewChecker())
 	if config.SpecPath != "" {
 		r.AddCheckers(response_schema.NewChecker(config.SpecPath))
@@ -118,10 +109,6 @@ func main() {
 	}
 
 	consoleOutput.ShowSummary(summary)
-
-	if allureOutput != nil {
-		allureOutput.Finalize()
-	}
 
 	if !summary.Success {
 		os.Exit(1)

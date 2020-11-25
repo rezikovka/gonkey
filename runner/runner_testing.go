@@ -13,7 +13,6 @@ import (
 	"github.com/lamoda/gonkey/checker/response_header"
 	"github.com/lamoda/gonkey/fixtures"
 	"github.com/lamoda/gonkey/output"
-	"github.com/lamoda/gonkey/output/allure_report"
 	testingOutput "github.com/lamoda/gonkey/output/testing"
 	"github.com/lamoda/gonkey/testloader/yaml_file"
 	"github.com/lamoda/gonkey/variables"
@@ -64,12 +63,6 @@ func RunWithTesting(t *testing.T, params *RunWithTestingParams) {
 		r.AddOutput(params.OutputFunc)
 	} else {
 		r.AddOutput(testingOutput.NewOutput(t))
-	}
-
-	if os.Getenv("GONKEY_ALLURE_DIR") != "" {
-		allureOutput := allure_report.NewOutput("Gonkey", os.Getenv("GONKEY_ALLURE_DIR"))
-		defer allureOutput.Finalize()
-		r.AddOutput(allureOutput)
 	}
 
 	r.AddCheckers(response_body.NewChecker())
