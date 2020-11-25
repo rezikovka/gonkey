@@ -247,7 +247,10 @@ func resolveRequestBody(definition TestDefinition) (string, error) {
 
 // resolveResponses формирует мап с ожидаемыми ответами.
 func resolveResponses(definition TestDefinition) (map[int]string, error) {
-	responses := definition.ResponseTmpls
+	responses := make(map[int]string)
+	if definition.ResponseTmpls != nil {
+		responses = definition.ResponseTmpls
+	}
 
 	for key, _ := range definition.ResponseTmplFiles {
 		// два варианта ответа не могут быть заданы для одного статус-кода
