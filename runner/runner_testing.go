@@ -8,14 +8,14 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/lamoda/gonkey/checker/response_body"
-	"github.com/lamoda/gonkey/checker/response_db"
-	"github.com/lamoda/gonkey/checker/response_header"
-	"github.com/lamoda/gonkey/fixtures"
-	"github.com/lamoda/gonkey/output"
-	testingOutput "github.com/lamoda/gonkey/output/testing"
-	"github.com/lamoda/gonkey/testloader/yaml_file"
-	"github.com/lamoda/gonkey/variables"
+	"github.com/rezikovka/gonkey/checker/response_body"
+	"github.com/rezikovka/gonkey/checker/response_db"
+	"github.com/rezikovka/gonkey/checker/response_header"
+	"github.com/rezikovka/gonkey/fixtures"
+	"github.com/rezikovka/gonkey/output"
+	testingOutput "github.com/rezikovka/gonkey/output/testing"
+	"github.com/rezikovka/gonkey/testloader/yaml_file"
+	"github.com/rezikovka/gonkey/variables"
 )
 
 type RunWithTestingParams struct {

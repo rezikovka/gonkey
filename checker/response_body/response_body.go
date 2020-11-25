@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lamoda/gonkey/checker"
-	"github.com/lamoda/gonkey/compare"
-	"github.com/lamoda/gonkey/models"
+	"github.com/rezikovka/gonkey/checker"
+	"github.com/rezikovka/gonkey/compare"
+	"github.com/rezikovka/gonkey/models"
 )
 
 type ResponseBodyChecker struct {

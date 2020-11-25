@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lamoda/gonkey/checker"
-	"github.com/lamoda/gonkey/models"
+	"github.com/rezikovka/gonkey/checker"
+	"github.com/rezikovka/gonkey/models"
 
 	"github.com/fatih/color"
 	"github.com/kylelemons/godebug/pretty"

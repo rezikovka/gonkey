@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lamoda/gonkey/checker"
-	"github.com/lamoda/gonkey/fixtures"
-	"github.com/lamoda/gonkey/models"
-	"github.com/lamoda/gonkey/output"
-	"github.com/lamoda/gonkey/testloader"
-	"github.com/lamoda/gonkey/variables"
+	"github.com/rezikovka/gonkey/checker"
+	"github.com/rezikovka/gonkey/fixtures"
+	"github.com/rezikovka/gonkey/models"
+	"github.com/rezikovka/gonkey/output"
+	"github.com/rezikovka/gonkey/testloader"
+	"github.com/rezikovka/gonkey/variables"
 )
 
 type Config struct {

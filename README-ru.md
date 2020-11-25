@@ -37,8 +37,8 @@ Gonkey протестирует ваши сервисы, используя их
 
 ```go
 import (
-	"github.com/lamoda/gonkey/runner"
-	"github.com/lamoda/gonkey/mocks"
+	"github.com/rezikovka/gonkey/runner"
+	"github.com/rezikovka/gonkey/mocks"
 )
 ```
 

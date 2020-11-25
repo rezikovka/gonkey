@@ -10,14 +10,14 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/lamoda/gonkey/checker/response_body"
-	"github.com/lamoda/gonkey/checker/response_db"
-	"github.com/lamoda/gonkey/checker/response_schema"
-	"github.com/lamoda/gonkey/fixtures"
-	"github.com/lamoda/gonkey/output/console_colored"
-	"github.com/lamoda/gonkey/runner"
-	"github.com/lamoda/gonkey/testloader/yaml_file"
-	"github.com/lamoda/gonkey/variables"
+	"github.com/rezikovka/gonkey/checker/response_body"
+	"github.com/rezikovka/gonkey/checker/response_db"
+	"github.com/rezikovka/gonkey/checker/response_schema"
+	"github.com/rezikovka/gonkey/fixtures"
+	"github.com/rezikovka/gonkey/output/console_colored"
+	"github.com/rezikovka/gonkey/runner"
+	"github.com/rezikovka/gonkey/testloader/yaml_file"
+	"github.com/rezikovka/gonkey/variables"
 )
 
 func main() {

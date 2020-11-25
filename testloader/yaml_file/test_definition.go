@@ -1,6 +1,6 @@
 package yaml_file
 
-import "github.com/lamoda/gonkey/models"
+import "github.com/rezikovka/gonkey/models"
 
 type TestDefinition struct {
 	fileLocatedDir    string

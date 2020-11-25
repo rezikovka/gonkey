@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/lamoda/gonkey/fixtures/postgres"
+	"github.com/rezikovka/gonkey/fixtures/postgres"
 )
 
 type Config struct {
