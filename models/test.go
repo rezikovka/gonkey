@@ -1,6 +1,26 @@
 package models
 
-import "github.com/rezikovka/gonkey/testloader/yaml_file"
+type DataType string
+
+const DataTypePath = DataType("path")
+const DataTypeJson = DataType("json")
+const DataTypePlainText = DataType("plain")
+
+// TODO: add support for form fields
+type Form struct {
+	Files map[string]string `yaml:"files"`
+}
+
+type DataBody struct {
+	Type  DataType `yaml:"type"`
+	Value string   `yaml:"value"`
+}
+
+type Summary struct {
+	Success bool
+	Failed  int
+	Total   int
+}
 
 // Common Test interface
 type TestInterface interface {
@@ -9,8 +29,8 @@ type TestInterface interface {
 	ToJSON() ([]byte, error)
 	GetMethod() string
 	Path() string
-	GetResponses() map[int]yaml_file.ResponseBody
-	GetResponse(code int) (yaml_file.ResponseBody, bool)
+	GetResponses() map[int]*DataBody
+	GetResponse(code int) (*DataBody, bool)
 	GetResponseHeaders(code int) (map[string]string, bool)
 	GetName() string
 	Fixtures() []string
@@ -30,7 +50,7 @@ type TestInterface interface {
 	SetPath(string)
 	SetRequest(string)
 	SetForm(form *Form)
-	SetResponses(map[int]yaml_file.ResponseBody)
+	SetResponses(map[int]*DataBody)
 	SetHeaders(map[string]string)
 
 	// comparison properties
@@ -40,15 +60,4 @@ type TestInterface interface {
 
 	// Clone returns copy of current object
 	Clone() TestInterface
-}
-
-// TODO: add support for form fields
-type Form struct {
-	Files map[string]string `json:"files" yaml:"files"`
-}
-
-type Summary struct {
-	Success bool
-	Failed  int
-	Total   int
 }

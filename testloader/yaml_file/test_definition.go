@@ -2,38 +2,26 @@ package yaml_file
 
 import "github.com/rezikovka/gonkey/models"
 
-type ResponseType string
-
-const ResponseTypeJson = ResponseType("json")
-const ResponseTypePlain = ResponseType("plain")
-
 type TestDefinition struct {
-	fileLocatedDir        string
-	Name                  string                    `yaml:"name"`
-	Variables             map[string]string         `yaml:"variables"`
-	VariablesToSet        VariablesToSet            `yaml:"variables_to_set"`
-	Form                  *models.Form              `yaml:"form"`
-	Method                string                    `yaml:"method"`
-	RequestURL            string                    `yaml:"path"`
-	QueryParams           string                    `yaml:"query"`
-	RequestTmpl           string                    `yaml:"request"`
-	RequestJsonFile       string                    `yaml:"requestJsonFile"`
-	ResponseTmpls         map[int]ResponseBody      `yaml:"response"`
-	ResponseTmplJsonFiles map[int]string            `yaml:"responseJsonFiles"`
-	ResponseHeaders       map[int]map[string]string `yaml:"responseHeaders"`
-	HeadersVal            map[string]string         `yaml:"headers"`
-	CookiesVal            map[string]string         `yaml:"cookies"`
-	Cases                 []CaseData                `yaml:"cases"`
-	ComparisonParams      comparisonParams          `yaml:"comparisonParams"`
-	FixtureFiles          []string                  `yaml:"fixtures"`
-	PauseValue            int                       `yaml:"pause"`
-	DbQueryTmpl           string                    `yaml:"dbQuery"`
-	DbResponseTmpl        []string                  `yaml:"dbResponse"`
-}
-
-type ResponseBody struct {
-	Type  ResponseType `yaml:"type"`
-	Value string       `yaml:"body"`
+	fileLocatedDir   string
+	Name             string                    `yaml:"name"`
+	Variables        map[string]string         `yaml:"variables"`
+	VariablesToSet   VariablesToSet            `yaml:"variables_to_set"`
+	Form             *models.Form              `yaml:"form"`
+	Method           string                    `yaml:"method"`
+	RequestURL       string                    `yaml:"path"`
+	QueryParams      string                    `yaml:"query"`
+	Request          *models.DataBody          `yaml:"request"`
+	Responses        map[int]*models.DataBody  `yaml:"response"`
+	ResponseHeaders  map[int]map[string]string `yaml:"responseHeaders"`
+	HeadersVal       map[string]string         `yaml:"headers"`
+	CookiesVal       map[string]string         `yaml:"cookies"`
+	Cases            []CaseData                `yaml:"cases"`
+	ComparisonParams comparisonParams          `yaml:"comparisonParams"`
+	FixtureFiles     []string                  `yaml:"fixtures"`
+	PauseValue       int                       `yaml:"pause"`
+	DbQueryTmpl      string                    `yaml:"dbQuery"`
+	DbResponseTmpl   []string                  `yaml:"dbResponse"`
 }
 
 type CaseData struct {
@@ -51,11 +39,6 @@ type comparisonParams struct {
 }
 
 type VariablesToSet map[int]map[string]string
-
-func responseTypeIsAcceptable(responseBody ResponseBody) bool {
-	return responseBody.Type == ResponseTypeJson ||
-		responseBody.Type == ResponseTypePlain
-}
 
 /*
 There can be two types of data in yaml-file:

@@ -10,7 +10,7 @@ type Test struct {
 	TestDefinition
 
 	Request         string
-	Responses       map[int]ResponseBody
+	Responses       map[int]*models.DataBody
 	ResponseHeaders map[int]map[string]string
 	DbQuery         string
 	DbResponse      []string
@@ -36,11 +36,11 @@ func (t *Test) ToJSON() ([]byte, error) {
 	return []byte(t.Request), nil
 }
 
-func (t *Test) GetResponses() map[int]ResponseBody {
+func (t *Test) GetResponses() map[int]models.DataBody {
 	return t.Responses
 }
 
-func (t *Test) GetResponse(code int) (ResponseBody, bool) {
+func (t *Test) GetResponse(code int) (models.DataBody, bool) {
 	val, ok := t.Responses[code]
 	return val, ok
 }
@@ -132,7 +132,7 @@ func (t *Test) SetForm(val *models.Form) {
 	t.Form = val
 }
 
-func (t *Test) SetResponses(val map[int]ResponseBody) {
+func (t *Test) SetResponses(val map[int]models.DataBody) {
 	t.Responses = val
 }
 

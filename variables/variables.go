@@ -118,14 +118,11 @@ func (vs *Variables) performHeaders(headers map[string]string) map[string]string
 	return res
 }
 
-func (vs *Variables) performResponses(responses map[int]string) map[int]string {
-
-	res := make(map[int]string)
-
-	for k, v := range responses {
-		res[k] = vs.perform(v)
+func (vs *Variables) performResponses(responses map[int]*models.DataBody) map[int]*models.DataBody {
+	for k, _ := range responses {
+		responses[k].Value = vs.perform(responses[k].Value)
 	}
-	return res
+	return responses
 }
 
 func (vs *Variables) Add(v *Variable) *Variables {

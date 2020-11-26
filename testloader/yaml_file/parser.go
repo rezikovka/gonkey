@@ -3,13 +3,13 @@ package yaml_file
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
 
+	"github.com/rezikovka/gonkey/models"
 	"gopkg.in/yaml.v2"
 )
 
@@ -98,7 +98,7 @@ func makeTestFromDefinition(testDefinition TestDefinition) ([]Test, error) {
 	// test definition has no cases, so using request/response as is
 	if len(testDefinition.Cases) == 0 {
 		test := Test{TestDefinition: testDefinition}
-		test.Request = request
+		test.Request = request.Value
 		test.Responses = responses
 		test.ResponseHeaders = testDefinition.ResponseHeaders
 		test.DbQuery = testDefinition.DbQueryTmpl
@@ -117,7 +117,7 @@ func makeTestFromDefinition(testDefinition TestDefinition) ([]Test, error) {
 			return nil, err
 		}
 
-		test.Request, err = substituteArgs(request, testCase.RequestArgs)
+		test.Request, err = substituteArgs(request.Value, testCase.RequestArgs)
 		if err != nil {
 			return nil, err
 		}
@@ -138,7 +138,7 @@ func makeTestFromDefinition(testDefinition TestDefinition) ([]Test, error) {
 		}
 
 		// substitute ResponseArgs to different parts of response
-		test.Responses = make(map[int]ResponseBody)
+		test.Responses = make(map[int]*models.DataBody)
 		for status, tpl := range responses {
 			args, ok := testCase.ResponseArgs[status]
 			if ok {
@@ -199,82 +199,103 @@ func makeTestFromDefinition(testDefinition TestDefinition) ([]Test, error) {
 	return tests, nil
 }
 
-// readJsonFile считывает файл json и валидирует его
-func readJsonFile(directory, fileName string) (string, error) {
-	candidates := []string{
-		strings.TrimRight(directory, "/") + "/" + strings.TrimLeft(fileName, "/"),
-		strings.TrimRight(directory, "/") + "/" + strings.TrimLeft(fileName, "/") + ".json",
+func getDataTypeByFileName(fileName string) models.DataType {
+	parts := strings.Split(fileName, ".")
+
+	ext := parts[len(parts)-1]
+
+	switch ext {
+	case "json":
+		return models.DataTypeJson
+	default:
+		return models.DataTypePlainText
+	}
+}
+
+// readDataFile считывает файл и валидирует его согласно типу данных
+func readDataFile(directory, fileName string) (*models.DataBody, error) {
+	path := strings.TrimRight(directory, "/") + "/" + strings.TrimLeft(fileName, "/")
+	dataType := getDataTypeByFileName(fileName)
+
+	if _, err := os.Stat(path); err != nil {
+		return nil, err
 	}
 
-	var err error
-	var absPath string
-	for _, candidate := range candidates {
-		if _, err = os.Stat(candidate); err == nil {
-			absPath = candidate
-			break
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file %s:\n%s", path, err)
+	}
+
+	if dataType == models.DataTypeJson {
+		err = validateJson(data)
+		if err != nil {
+			return nil, fmt.Errorf("invalid json in file %s:\n%s", path, err)
 		}
 	}
 
-	if err != nil {
-		return "", err
-	}
+	return &models.DataBody{Type: dataType, Value: string(data)}, nil
+}
 
-	data, err := ioutil.ReadFile(absPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read file %s:\n%s", absPath, err)
-	}
-
+func validateJson(data []byte) error {
 	var j interface{}
-	if err := json.Unmarshal(data, &j); err != nil {
-		return "", fmt.Errorf("invalid json in file %s:\n%s", absPath, err)
-	}
-
-	return string(data), nil
+	return json.Unmarshal(data, &j)
 }
 
 // resolveRequestBody возвращает тело запроса.
-func resolveRequestBody(definition TestDefinition) (string, error) {
-	switch {
-	// тело запроса не может быть задано дважды
-	case definition.RequestJsonFile != "" && definition.RequestTmpl != "":
-		return "", errors.New("RequestJsonFile and RequestTmpl defined both in TestDefinition")
-	case definition.RequestJsonFile != "":
-		return readJsonFile(definition.fileLocatedDir, definition.RequestJsonFile)
-	case definition.RequestTmpl != "":
-		return definition.RequestTmpl, nil
-	default:
-		return "", nil
+func resolveRequestBody(definition TestDefinition) (*models.DataBody, error) {
+	request, err := resolveDataBody(definition.fileLocatedDir, definition.Request)
+	if err != nil {
+		return nil, err
 	}
+
+	if request == nil {
+		request = &models.DataBody{
+			Type:  models.DataTypePlainText,
+			Value: "",
+		}
+	}
+	return request, err
 }
 
 // resolveResponses формирует мап с ожидаемыми ответами.
-func resolveResponses(definition TestDefinition) (map[int]ResponseBody, error) {
-	responses := make(map[int]ResponseBody)
-	if definition.ResponseTmpls != nil {
-		responses = definition.ResponseTmpls
+func resolveResponses(definition TestDefinition) (map[int]*models.DataBody, error) {
+	responses := make(map[int]*models.DataBody)
+	if definition.Responses == nil {
+		return responses, nil
 	}
 
+	var err error
 	for key, _ := range responses {
-		if !responseTypeIsAcceptable(responses[key]) {
-			return nil, errors.New(fmt.Sprintf("response type %s is not acceptable for status code %d", responses[key].Type, key))
-		}
-	}
-
-	for key, _ := range definition.ResponseTmplJsonFiles {
-		// два варианта ответа не могут быть заданы для одного статус-кода
-		if _, ok := responses[key]; ok {
-			return nil, errors.New(fmt.Sprintf("response body for status code %d is defined twice in ResponseTmpls and ResponseTmplJsonFiles", key))
-		}
-
-		val, err := readJsonFile(definition.fileLocatedDir, definition.ResponseTmplJsonFiles[key])
+		responses[key], err = resolveDataBody(definition.fileLocatedDir, definition.Responses[key])
 		if err != nil {
 			return nil, err
 		}
-
-		responses[key] = ResponseBody{
-			Type:  ResponseTypeJson,
-			Value: val,
-		}
 	}
+
 	return responses, nil
+}
+
+func resolveDataBody(testCaseFileLocationDir string, data *models.DataBody) (*models.DataBody, error) {
+	if data == nil {
+		return nil, nil
+	}
+
+	var err error
+	switch data.Type {
+	case models.DataTypePath:
+		data, err = readDataFile(testCaseFileLocationDir, data.Value)
+		if err != nil {
+			return nil, err
+		}
+		return data, nil
+	case models.DataTypeJson:
+		if err = validateJson([]byte(data.Value)); err != nil {
+			return nil, fmt.Errorf("invalid json:\n%s", err)
+		}
+		return data, nil
+	case models.DataTypePlainText:
+		return data, nil
+	}
+
+	return nil, fmt.Errorf("unexpected data type %s", data.Type)
 }

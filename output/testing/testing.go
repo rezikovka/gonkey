@@ -57,7 +57,7 @@ Request:
 Response:
      Status: {{ .ResponseStatus }}
        Body:
-{{ if .ResponseBody }}{{ .ResponseBody }}{{ else }}{{ "<no body>" }}{{ end }}
+{{ if .DataBody }}{{ .DataBody }}{{ else }}{{ "<no body>" }}{{ end }}
 
 {{ if .DbQuery }}
        Db Request:
