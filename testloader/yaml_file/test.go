@@ -36,11 +36,11 @@ func (t *Test) ToJSON() ([]byte, error) {
 	return []byte(t.Request), nil
 }
 
-func (t *Test) GetResponses() map[int]models.DataBody {
+func (t *Test) GetResponses() map[int]*models.DataBody {
 	return t.Responses
 }
 
-func (t *Test) GetResponse(code int) (models.DataBody, bool) {
+func (t *Test) GetResponse(code int) (*models.DataBody, bool) {
 	val, ok := t.Responses[code]
 	return val, ok
 }
@@ -132,7 +132,7 @@ func (t *Test) SetForm(val *models.Form) {
 	t.Form = val
 }
 
-func (t *Test) SetResponses(val map[int]models.DataBody) {
+func (t *Test) SetResponses(val map[int]*models.DataBody) {
 	t.Responses = val
 }
 
