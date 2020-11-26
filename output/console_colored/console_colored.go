@@ -69,7 +69,7 @@ Request:
 Response:
      Status: {{ cyan .ResponseStatus }}
        Body:
-{{ if .DataBody }}{{ yellow .DataBody }}{{ else }}{{ yellow "<no body>" }}{{ end }}
+{{ if .ResponseBody }}{{ yellow .ResponseBody }}{{ else }}{{ yellow "<no body>" }}{{ end }}
 
 {{ if .DbQuery }}
        Db Request:
