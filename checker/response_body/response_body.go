@@ -8,7 +8,6 @@ import (
 	"github.com/rezikovka/gonkey/checker"
 	"github.com/rezikovka/gonkey/compare"
 	"github.com/rezikovka/gonkey/models"
-	"github.com/rezikovka/gonkey/testloader/yaml_file"
 )
 
 type ResponseBodyChecker struct {
@@ -26,7 +25,7 @@ func (c *ResponseBodyChecker) Check(t models.TestInterface, result *models.Resul
 	if expectedBody, ok := t.GetResponse(result.ResponseStatusCode); ok {
 		foundResponse = true
 		// is the response JSON document?
-		if expectedBody.Type == yaml_file.ResponseTypeJson {
+		if expectedBody.Type == "json" {
 			checkErrs, err := compareJsonBody(t, expectedBody.Value, result)
 			if err != nil {
 				return nil, err
