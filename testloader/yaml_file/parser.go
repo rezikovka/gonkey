@@ -138,15 +138,17 @@ func makeTestFromDefinition(testDefinition TestDefinition) ([]Test, error) {
 		}
 
 		// substitute ResponseArgs to different parts of response
-		test.Responses = make(map[int]string)
+		test.Responses = make(map[int]ResponseBody)
 		for status, tpl := range responses {
 			args, ok := testCase.ResponseArgs[status]
 			if ok {
 				// found args for response status
-				test.Responses[status], err = substituteArgs(tpl, args)
+
+				tpl.Value, err = substituteArgs(tpl.Value, args)
 				if err != nil {
 					return nil, err
 				}
+				test.Responses[status] = tpl
 			} else {
 				// not found args, using response as is
 				test.Responses[status] = tpl
@@ -234,10 +236,10 @@ func readJsonFile(directory, fileName string) (string, error) {
 func resolveRequestBody(definition TestDefinition) (string, error) {
 	switch {
 	// тело запроса не может быть задано дважды
-	case definition.RequestTmplFile != "" && definition.RequestTmpl != "":
-		return "", errors.New("RequestTmplFile and RequestTmpl defined both in TestDefinition")
-	case definition.RequestTmplFile != "":
-		return readJsonFile(definition.fileLocatedDir, definition.RequestTmplFile)
+	case definition.RequestJsonFile != "" && definition.RequestTmpl != "":
+		return "", errors.New("RequestJsonFile and RequestTmpl defined both in TestDefinition")
+	case definition.RequestJsonFile != "":
+		return readJsonFile(definition.fileLocatedDir, definition.RequestJsonFile)
 	case definition.RequestTmpl != "":
 		return definition.RequestTmpl, nil
 	default:
@@ -246,22 +248,32 @@ func resolveRequestBody(definition TestDefinition) (string, error) {
 }
 
 // resolveResponses формирует мап с ожидаемыми ответами.
-func resolveResponses(definition TestDefinition) (map[int]string, error) {
-	responses := make(map[int]string)
+func resolveResponses(definition TestDefinition) (map[int]ResponseBody, error) {
+	responses := make(map[int]ResponseBody)
 	if definition.ResponseTmpls != nil {
 		responses = definition.ResponseTmpls
 	}
 
-	for key, _ := range definition.ResponseTmplFiles {
+	for key, _ := range responses {
+		if !responseTypeIsAcceptable(responses[key]) {
+			return nil, errors.New(fmt.Sprintf("response type %s is not acceptable for status code %d", responses[key].Type, key))
+		}
+	}
+
+	for key, _ := range definition.ResponseTmplJsonFiles {
 		// два варианта ответа не могут быть заданы для одного статус-кода
 		if _, ok := responses[key]; ok {
-			return nil, errors.New(fmt.Sprintf("response body for status code %d is defined twice in ResponseTmpls and ResponseTmplFiles", key))
+			return nil, errors.New(fmt.Sprintf("response body for status code %d is defined twice in ResponseTmpls and ResponseTmplJsonFiles", key))
 		}
 
-		var err error
-		responses[key], err = readJsonFile(definition.fileLocatedDir, definition.ResponseTmplFiles[key])
+		val, err := readJsonFile(definition.fileLocatedDir, definition.ResponseTmplJsonFiles[key])
 		if err != nil {
 			return nil, err
+		}
+
+		responses[key] = ResponseBody{
+			Type:  ResponseTypeJson,
+			Value: val,
 		}
 	}
 	return responses, nil

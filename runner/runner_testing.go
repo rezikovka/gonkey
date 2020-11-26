@@ -24,8 +24,8 @@ type RunWithTestingParams struct {
 	DB          *sql.DB
 	EnvFilePath string
 	OutputFunc  output.OutputInterface
-	debugMode   bool   // режим отладки
-	testFilter  string // подстрока для фильтрации тестов по имени файла. Будут запущены только тесты с вхождением подстроки
+	DebugMode   bool   // режим отладки
+	TestFilter  string // подстрока для фильтрации тестов по имени файла. Будут запущены только тесты с вхождением подстроки
 }
 
 // RunWithTesting is a helper function the wraps the common Run and provides simple way
@@ -42,12 +42,12 @@ func RunWithTesting(t *testing.T, params *RunWithTestingParams) {
 		fixturesLoader = fixtures.NewLoader(&fixtures.Config{
 			Location: params.FixturesDir,
 			DB:       params.DB,
-			Debug:    params.debugMode,
+			Debug:    params.DebugMode,
 		})
 	}
 
 	yamlLoader := yaml_file.NewLoader(params.TestsDir)
-	yamlLoader.SetFileFilter(params.testFilter)
+	yamlLoader.SetFileFilter(params.TestFilter)
 
 	r := New(
 		&Config{

@@ -2,45 +2,60 @@ package yaml_file
 
 import "github.com/rezikovka/gonkey/models"
 
+type ResponseType string
+
+const ResponseTypeJson = ResponseType("json")
+const ResponseTypePlain = ResponseType("plain")
+
 type TestDefinition struct {
-	fileLocatedDir    string
-	Name              string                    `yaml:"name"`
-	Variables         map[string]string         `yaml:"variables"`
-	VariablesToSet    VariablesToSet            `yaml:"variables_to_set"`
-	Form              *models.Form              `yaml:"form"`
-	Method            string                    `yaml:"method"`
-	RequestURL        string                    `yaml:"path"`
-	QueryParams       string                    `yaml:"query"`
-	RequestTmpl       string                    `yaml:"request"`
-	RequestTmplFile   string                    `yaml:"requestFile"`
-	ResponseTmpls     map[int]string            `yaml:"response"`
-	ResponseTmplFiles map[int]string            `yaml:"responseFiles"`
-	ResponseHeaders   map[int]map[string]string `yaml:"responseHeaders"`
-	HeadersVal        map[string]string         `yaml:"headers"`
-	CookiesVal        map[string]string         `yaml:"cookies"`
-	Cases             []CaseData                `yaml:"cases"`
-	ComparisonParams  comparisonParams          `yaml:"comparisonParams"`
-	FixtureFiles      []string                  `yaml:"fixtures"`
-	PauseValue        int                       `yaml:"pause"`
-	DbQueryTmpl       string                    `yaml:"dbQuery"`
-	DbResponseTmpl    []string                  `yaml:"dbResponse"`
+	fileLocatedDir        string
+	Name                  string                    `yaml:"name"`
+	Variables             map[string]string         `yaml:"variables"`
+	VariablesToSet        VariablesToSet            `yaml:"variables_to_set"`
+	Form                  *models.Form              `yaml:"form"`
+	Method                string                    `yaml:"method"`
+	RequestURL            string                    `yaml:"path"`
+	QueryParams           string                    `yaml:"query"`
+	RequestTmpl           string                    `yaml:"request"`
+	RequestJsonFile       string                    `yaml:"requestJsonFile"`
+	ResponseTmpls         map[int]ResponseBody      `yaml:"response"`
+	ResponseTmplJsonFiles map[int]string            `yaml:"responseJsonFiles"`
+	ResponseHeaders       map[int]map[string]string `yaml:"responseHeaders"`
+	HeadersVal            map[string]string         `yaml:"headers"`
+	CookiesVal            map[string]string         `yaml:"cookies"`
+	Cases                 []CaseData                `yaml:"cases"`
+	ComparisonParams      comparisonParams          `yaml:"comparisonParams"`
+	FixtureFiles          []string                  `yaml:"fixtures"`
+	PauseValue            int                       `yaml:"pause"`
+	DbQueryTmpl           string                    `yaml:"dbQuery"`
+	DbResponseTmpl        []string                  `yaml:"dbResponse"`
+}
+
+type ResponseBody struct {
+	Type  ResponseType `yaml:"type"`
+	Value string       `yaml:"body"`
 }
 
 type CaseData struct {
-	RequestArgs    map[string]interface{}         `json:"requestArgs" yaml:"requestArgs"`
-	ResponseArgs   map[int]map[string]interface{} `json:"responseArgs" yaml:"responseArgs"`
-	DbQueryArgs    map[string]interface{}         `json:"dbQueryArgs" yaml:"dbQueryArgs"`
-	DbResponseArgs map[string]interface{}         `json:"dbResponseArgs" yaml:"dbResponseArgs"`
-	DbResponse     []string                       `json:"dbResponse" yaml:"dbResponse"`
+	RequestArgs    map[string]interface{}         `yaml:"requestArgs"`
+	ResponseArgs   map[int]map[string]interface{} `yaml:"responseArgs"`
+	DbQueryArgs    map[string]interface{}         `yaml:"dbQueryArgs"`
+	DbResponseArgs map[string]interface{}         `yaml:"dbResponseArgs"`
+	DbResponse     []string                       `yaml:"dbResponse"`
 }
 
 type comparisonParams struct {
-	IgnoreValues         bool `json:"ignoreValues" yaml:"ignoreValues"`
-	IgnoreArraysOrdering bool `json:"ignoreArraysOrdering" yaml:"ignoreArraysOrdering"`
-	DisallowExtraFields  bool `json:"disallowExtraFields" yaml:"disallowExtraFields"`
+	IgnoreValues         bool `yaml:"ignoreValues"`
+	IgnoreArraysOrdering bool `yaml:"ignoreArraysOrdering"`
+	DisallowExtraFields  bool `yaml:"disallowExtraFields"`
 }
 
 type VariablesToSet map[int]map[string]string
+
+func responseTypeIsAcceptable(responseBody ResponseBody) bool {
+	return responseBody.Type == ResponseTypeJson ||
+		responseBody.Type == ResponseTypePlain
+}
 
 /*
 There can be two types of data in yaml-file:
@@ -61,29 +76,29 @@ There can be two types of data in yaml-file:
 		<code2>:
 			<varName2>: ""
 */
-func (v *VariablesToSet) UnmarshalYAML(unmarshal func(interface{}) error) error {
-
-	res := make(map[int]map[string]string)
-
-	// try to unmarshall as plaint text
-	var plain map[int]string
-	if err := unmarshal(&plain); err == nil {
-
-		for code, varName := range plain {
-			res[code] = map[string]string{
-				varName: "",
-			}
-		}
-
-		*v = res
-		return nil
-	}
-
-	// json-paths
-	if err := unmarshal(&res); err != nil {
-		return err
-	}
-
-	*v = res
-	return nil
-}
+//func (v *VariablesToSet) UnmarshalYAML(unmarshal func(interface{}) error) error {
+//
+//	res := make(map[int]map[string]string)
+//
+//	// try to unmarshall as plaint text
+//	var plain map[int]string
+//	if err := unmarshal(&plain); err == nil {
+//
+//		for code, varName := range plain {
+//			res[code] = map[string]string{
+//				varName: "",
+//			}
+//		}
+//
+//		*v = res
+//		return nil
+//	}
+//
+//	// json-paths
+//	if err := unmarshal(&res); err != nil {
+//		return err
+//	}
+//
+//	*v = res
+//	return nil
+//}

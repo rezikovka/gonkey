@@ -1,5 +1,7 @@
 package models
 
+import "github.com/rezikovka/gonkey/testloader/yaml_file"
+
 // Common Test interface
 type TestInterface interface {
 	ToQuery() string
@@ -7,8 +9,8 @@ type TestInterface interface {
 	ToJSON() ([]byte, error)
 	GetMethod() string
 	Path() string
-	GetResponses() map[int]string
-	GetResponse(code int) (string, bool)
+	GetResponses() map[int]yaml_file.ResponseBody
+	GetResponse(code int) (yaml_file.ResponseBody, bool)
 	GetResponseHeaders(code int) (map[string]string, bool)
 	GetName() string
 	Fixtures() []string
@@ -28,7 +30,7 @@ type TestInterface interface {
 	SetPath(string)
 	SetRequest(string)
 	SetForm(form *Form)
-	SetResponses(map[int]string)
+	SetResponses(map[int]yaml_file.ResponseBody)
 	SetHeaders(map[string]string)
 
 	// comparison properties
